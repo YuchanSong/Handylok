@@ -18,7 +18,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
-    Calendar calendar ;
+    Calendar calendar;
     int Year, Month, Day;
     int Hour, Minute;
     TextView date;
@@ -28,40 +28,42 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 현재 날짜 구하기
+        // Init
         Button dialog_bt_date = findViewById(R.id.dialog_bt_date);
-        calendar = Calendar.getInstance();
-        Year = calendar.get(Calendar.YEAR) ;
-        Month = calendar.get(Calendar.MONTH);
-        Day = calendar.get(Calendar.DAY_OF_MONTH);
-        Hour = calendar.get(calendar.HOUR_OF_DAY);
-        Minute = calendar.get(calendar.MINUTE);
-        date = findViewById(R.id.date);
 
+        // Btn_Click_Listener
         dialog_bt_date.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DatePickerDialog d_dialog = new DatePickerDialog(MainActivity.this, listener, Year, Month, Day);
+                // 버튼이 클릭되면 현재 날짜/시간 불러오기
+                calendar = Calendar.getInstance();
+                Year = calendar.get(Calendar.YEAR) ;
+                Month = calendar.get(Calendar.MONTH);
+                Day = calendar.get(Calendar.DAY_OF_MONTH);
+                Hour = calendar.get(calendar.HOUR_OF_DAY);
+                Minute = calendar.get(calendar.MINUTE);
+                date = findViewById(R.id.date);
+                DatePickerDialog d_dialog = new DatePickerDialog(MainActivity.this, mDataSetListener, Year, Month, Day);
                 d_dialog.show();
             }
         });
 
     }
 
-    private DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+    // DatePickerDialog
+    private DatePickerDialog.OnDateSetListener mDataSetListener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            Toast.makeText(getApplicationContext(), year + "년 " + (monthOfYear + 1) + "월 " + dayOfMonth +"일", Toast.LENGTH_SHORT).show();
             TimePickerDialog t_dialog = new TimePickerDialog(MainActivity.this, mTimeSetListener, Hour, Minute, true);
             t_dialog.show();
             date.setText(year + "/" + (monthOfYear + 1) + "/" + dayOfMonth + " ");
         }
     };
 
+    // TimePickerDialog
     private TimePickerDialog.OnTimeSetListener mTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            Toast.makeText(getApplicationContext(), hourOfDay + "시 " + minute + "분", Toast.LENGTH_SHORT).show();
             date.append(hourOfDay + "시 " + minute + "분");
         }
     };
