@@ -23,6 +23,9 @@ public class MainActivity extends AppCompatActivity {
     int Hour, Minute;
     TextView date;
 
+    private final long FINISH_INTERVAL_TIME = 2000;
+    private long backPressedTime = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,4 +70,19 @@ public class MainActivity extends AppCompatActivity {
             date.append(hourOfDay + "시 " + minute + "분");
         }
     };
+
+    // back key 2번 종료
+    @Override
+    public void onBackPressed() {
+        long tempTime = System.currentTimeMillis();
+        long intervalTime = tempTime - backPressedTime;
+
+        if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime)
+            super.onBackPressed();
+        else {
+            backPressedTime = tempTime;
+            Toast.makeText(getApplicationContext(), "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
