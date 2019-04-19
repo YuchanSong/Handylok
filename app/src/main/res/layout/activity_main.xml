@@ -8,17 +8,17 @@
     tools:context=".MainActivity">
 
     <Button
-        android:id="@+id/dialog_bt_date"
+        android:id="@+id/add"
         android:layout_width="wrap_content"
         android:layout_height="40dp"
         android:textColor="#FF000000"
         android:gravity="center"
-        android:text="DATE"/>
+        android:text="등록하기"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/dialog_bt_date"
+        android:layout_below="@id/add"
         android:id="@+id/date"
         android:text="Test"
         android:textSize="30sp"
