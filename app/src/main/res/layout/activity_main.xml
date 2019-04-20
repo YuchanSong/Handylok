@@ -1,27 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:padding="16dp">
+
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:dividerHeight="1dp"
+        android:footerDividersEnabled="true"/>
+
+    <!--<View-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="1dp"-->
+    <!--android:layout_below="@id/listView1"/>-->
 
     <Button
         android:id="@+id/add"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:textColor="#FF000000"
-        android:gravity="center"
-        android:text="등록하기"/>
-
-    <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/add"
-        android:id="@+id/date"
-        android:text="Test"
-        android:textSize="30sp"
-        android:textColor="#000"/>
-
+        android:layout_alignParentBottom="true"
+        android:onClick="clickAdd"
+        android:textAllCaps="false"
+        android:textSize="20sp"
+        android:text="등록하기" />
 </RelativeLayout>
