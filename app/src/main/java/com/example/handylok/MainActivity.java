@@ -44,10 +44,11 @@ public class MainActivity extends AppCompatActivity {
         // get column index
         currentCursor = db.fetchAllData();
 
-        // setup listview
+        // setup custom listview
         ListView listView = findViewById(R.id.listView);
         listAdapter = new CustomAdapter(this);
         listView.setAdapter(listAdapter);
+
         listView.setOnItemClickListener(itemClickListener);
         listView.setOnItemLongClickListener(itemLongClickListener);
     }
@@ -73,12 +74,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // addButton Click Listner (Add)
+    // addButton Click Listner (Add - RequestCode 100)
     public void clickAdd(View view) {
         startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
     }
 
-    // list Item Click Listener (Modify)
+    // list Item Click Listener (Modify - RequestCode 500)
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {

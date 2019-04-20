@@ -12,9 +12,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 
 import java.util.Calendar;
 
@@ -116,7 +117,7 @@ public class WriteActivity extends AppCompatActivity {
                             db.open();
                             db.addData(name, place, date, contexts);
                             db.close();
-                            finish();
+                            okDialog("추가");
                         } else {
                             Toast.makeText(getApplicationContext(), "공란 없이 입력해주세요.", Toast.LENGTH_SHORT).show();
                         }
@@ -132,7 +133,7 @@ public class WriteActivity extends AppCompatActivity {
                             db.open();
                             db.modifyData(id, name, place, date, contexts);
                             db.close();
-                            finish();
+                            okDialog("수정");
                         } else {
                             Toast.makeText(getApplicationContext(), "공란 없이 입력해주세요.", Toast.LENGTH_SHORT).show();
                         }
@@ -146,6 +147,22 @@ public class WriteActivity extends AppCompatActivity {
         insert.setOnClickListener(onClickListener);
         update.setOnClickListener(onClickListener);
 
+    }
+
+    private void okDialog(String type) {
+        final SweetAlertDialog okDialog = new SweetAlertDialog(context);
+        okDialog
+                .setTitleText(type)
+                .setContentText(type + " 성공했습니다.")
+                .setConfirmText("확인")
+                .show();
+
+        okDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+            @Override
+            public void onClick(SweetAlertDialog sDialog) {
+                finish();
+            }
+        });
     }
 
     // DatePickerDialog

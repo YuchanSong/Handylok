@@ -3,21 +3,22 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:weightSum="1"
     android:padding="5dp">
 
     <TextView
         android:id="@+id/nameView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:maxLines="1"/>
+        android:layout_weight="0.5"
+        android:maxLines="1"
+        android:textColor="#000"/>
 
     <TextView
         android:id="@+id/dateView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:maxLines="1"/>
-
-
+        android:layout_weight="0.5"
+        android:maxLines="1"
+        android:textColor="#000"/>
 </LinearLayout>

@@ -14,7 +14,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="이름" />
+            android:text="이름"
+            android:textColor="#000"/>
 
         <EditText
             android:id="@+id/name"
@@ -33,7 +34,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="장소" />
+            android:text="장소"
+            android:textColor="#000"/>
 
         <EditText
             android:id="@+id/place"
@@ -51,7 +53,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="일시" />
+            android:text="일시"
+            android:textColor="#000"/>
 
         <EditText
             android:id="@+id/date"
@@ -70,7 +73,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="내용" />
+            android:text="내용"
+            android:textColor="#000"/>
 
         <EditText
             android:id="@+id/context"
