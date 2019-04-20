@@ -34,7 +34,6 @@ public class WriteActivity extends AppCompatActivity {
 
     Calendar calendar;
     SimpleDateFormat format = new SimpleDateFormat();
-    SimpleDateFormat formater = new SimpleDateFormat();
 
     int Year, Month, Day;
     int Hour, Minute;

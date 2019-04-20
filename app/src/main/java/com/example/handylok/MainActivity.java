@@ -224,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         private class ListViewHolder {
             TextView nameView;
             TextView dateView;
-        };
+        }
     }
 
     // back key 2번 종료
