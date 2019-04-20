@@ -1,24 +1,23 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:padding="16dp">
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_weight="1"
+    android:fillViewport="true"
+    android:scrollbars="none"
+    android:visibility="visible">
 
-    <ListView
-        android:id="@+id/listView"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:dividerHeight="1dp"
-        android:footerDividersEnabled="true"/>
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/add"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:onClick="clickAdd"
-        android:textAllCaps="false"
-        android:textSize="20sp"
-        android:background="@drawable/button"
-        android:text="등록하기" />
-</RelativeLayout>
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentTop="true"
+            android:dividerHeight="1dp"
+            android:footerDividersEnabled="true" />
+    </RelativeLayout>
+</ScrollView>

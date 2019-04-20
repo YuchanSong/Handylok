@@ -3,9 +3,12 @@ package com.example.handylok;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        setActionBar("내 손안에 작은 회의록");
+
         // make and open database
         db = new DBAdapter(context);
         db.open();
@@ -51,6 +56,28 @@ public class MainActivity extends AppCompatActivity {
 
         listView.setOnItemClickListener(itemClickListener);
         listView.setOnItemLongClickListener(itemLongClickListener);
+    }
+
+    //액션버튼 메뉴 액션바에 집어 넣기
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    //액션버튼을 클릭했을때의 동작
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+
+        switch(id) {
+            case R.id.action_add:
+                // addButton Click Listner (Add - RequestCode 100)
+                startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     protected void onResume() {
@@ -72,11 +99,6 @@ public class MainActivity extends AppCompatActivity {
             db.close();
             dbOpen = false;
         }
-    }
-
-    // addButton Click Listner (Add - RequestCode 100)
-    public void clickAdd(View view) {
-        startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
     }
 
     // list Item Click Listener (Modify - RequestCode 500)
@@ -208,6 +230,11 @@ public class MainActivity extends AppCompatActivity {
             backPressedTime = tempTime;
             Toast.makeText(getApplicationContext(), "뒤로 가기 버튼을 한 번 더 누르면 종료됩니다.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void setActionBar(String title) {
+        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xFF339999));
     }
 
 }

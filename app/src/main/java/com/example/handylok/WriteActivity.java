@@ -4,9 +4,12 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -52,6 +55,8 @@ public class WriteActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_write);
+
+        setActionBar("내 손안에 작은 회의록");
 
         etName = findViewById(R.id.name);
         etPlace = findViewById(R.id.place);
@@ -152,6 +157,31 @@ public class WriteActivity extends AppCompatActivity {
 
     }
 
+    //액션버튼 메뉴 액션바에 집어 넣기
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.write_menu, menu);
+        return true;
+    }
+
+    //액션버튼을 클릭했을때의 동작
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        int id = item.getItemId();
+
+        switch(id) {
+            case android.R.id.home:
+                finish();
+                break;
+            case R.id.action_share:
+                break;
+            case R.id.action_attach:
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private void loadData() {
         name = etName.getText().toString();
         place = etPlace.getText().toString();
@@ -215,5 +245,11 @@ public class WriteActivity extends AppCompatActivity {
             etDate.append(format.format(calendar.getTime()));
         }
     };
+
+    private void setActionBar(String title) {
+        getSupportActionBar().setTitle(title);
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xFF339999));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
 }
