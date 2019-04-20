@@ -80,14 +80,14 @@ public class MainActivity extends AppCompatActivity {
         hideKeyboard();
     }
 
-    //액션버튼 메뉴 액션바에 집어 넣기
+    // 액션버튼 메뉴 액션바에 집어 넣기
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
 
-    //액션버튼을 클릭했을때의 동작
+    // 액션버튼을 클릭했을때의 동작
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         int id = item.getItemId();
@@ -107,27 +107,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    protected void onResume() {
-        super.onResume();
-
-        if (!dbOpen) {
-            db.open();
-            dbOpen = true;
-        }
-        currentCursor = db.fetchAllData();
-        listAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        if (dbOpen) {
-            db.close();
-            dbOpen = false;
-        }
     }
 
     // list Item Click Listener (Modify - RequestCode 500)
@@ -193,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // customAdapter
     public class CustomAdapter extends BaseAdapter {
         Context my_context;
 
@@ -261,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // 액션바 세팅
     private void setActionBar(String title) {
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xFF339999));
@@ -268,9 +249,31 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.action_refresh);
     }
 
-    private void hideKeyboard()
-    {
+    // 키보드 숨기는 메소드
+    private void hideKeyboard() {
         imm.hideSoftInputFromWindow(etFilter.getWindowToken(), 0);
+    }
+
+    protected void onResume() {
+        super.onResume();
+
+        if (!dbOpen) {
+            db.open();
+            dbOpen = true;
+        }
+        etFilter.setText("");
+        currentCursor = db.fetchAllData();
+        listAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        if (dbOpen) {
+            db.close();
+            dbOpen = false;
+        }
     }
 
 
