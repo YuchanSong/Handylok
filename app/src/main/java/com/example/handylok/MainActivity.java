@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -70,12 +71,24 @@ public class MainActivity extends AppCompatActivity {
         etFilter = findViewById(R.id.etFilter);
     }
 
+    private void errorDialog(String text) {
+        final SweetAlertDialog errorDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
+        errorDialog.setTitleText("검색 실패");
+        errorDialog.setContentText(text);
+        errorDialog.setConfirmText("확인");
+        errorDialog.show();
+    }
+
     // 검색 버튼 클릭 했을 때
     public void clickSearch(View v) {
-        currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
-        listAdapter.notifyDataSetChanged();
-        etFilter.clearFocus();
-        hideKeyboard();
+        if (etFilter.getText().toString().getBytes().length <= 0) {
+            errorDialog("검색창에 검색해주세요!");
+        } else {
+            currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
+            listAdapter.notifyDataSetChanged();
+            etFilter.clearFocus();
+            hideKeyboard();
+        }
     }
 
     // 액션버튼 메뉴 액션바에 집어 넣기
