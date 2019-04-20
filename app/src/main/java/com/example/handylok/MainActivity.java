@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -39,12 +40,18 @@ public class MainActivity extends AppCompatActivity {
     private final static int addRequestCode = 100;
     private final static int modifyRequestCode = 500;
 
+    InputMethodManager imm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // setup ActionBar
         setActionBar("내 손안에 작은 회의록");
+
+        // 검색 후 키보드 내리게 하기 위해서 선언
+        imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
         // make and open database
         db = new DBAdapter(context);
@@ -67,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
     // 검색 버튼 클릭 했을 때
     public void clickSearch(View v) {
-        Toast.makeText(context, "CLicked!", Toast.LENGTH_SHORT).show();
         currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
         listAdapter.notifyDataSetChanged();
+        hideKeyboard();
     }
 
     //액션버튼 메뉴 액션바에 집어 넣기
@@ -86,8 +93,10 @@ public class MainActivity extends AppCompatActivity {
 
         switch(id) {
             case android.R.id.home:
+                // refresh
                 currentCursor = db.fetchAllData();
                 listAdapter.notifyDataSetChanged();
+                etFilter.setText("");
                 break;
             case R.id.action_add:
                 // addButton Click Listner (Add - RequestCode 100)
@@ -256,5 +265,11 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.action_refresh);
     }
+
+    private void hideKeyboard()
+    {
+        imm.hideSoftInputFromWindow(etFilter.getWindowToken(), 0);
+    }
+
 
 }
