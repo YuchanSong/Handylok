@@ -17,17 +17,22 @@ import android.widget.Toast;
 
 import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class WriteActivity extends AppCompatActivity {
 
-    private static final int addMode = 100;
-    private static final int modifyMode = 500;
+    final Context context = this;
+
     Intent intent;
     int MainRequestCode;
+    private static final int addMode = 100;
+    private static final int modifyMode = 500;
 
-    final Context context = this;
     Calendar calendar;
+    SimpleDateFormat format = new SimpleDateFormat();
+    SimpleDateFormat formater = new SimpleDateFormat();
+
     int Year, Month, Day;
     int Hour, Minute;
 
@@ -58,14 +63,19 @@ public class WriteActivity extends AppCompatActivity {
 
         db = new DBAdapter(WriteActivity.this);
 
+        // 현재 날짜 저장 (datePicker 초기화 데이터)
         calendar = Calendar.getInstance();
-        Year = calendar.get(Calendar.YEAR) ;
-        Month = calendar.get(Calendar.MONTH);
-        Day = calendar.get(Calendar.DAY_OF_MONTH);
+        format.applyPattern("yyyy년 MM월 dd일 HH시 mm분");
+        Year = calendar.get(calendar.YEAR);
+        Month = calendar.get(calendar.MONTH);
+        Day = calendar.get(calendar.DAY_OF_MONTH);
+
+        // 현재 시간 저장 (timePicker 초기화 데이터)
         Hour = calendar.get(calendar.HOUR_OF_DAY);
         Minute = calendar.get(calendar.MINUTE);
-        etDate.setText(Year + "년 " + (Month + 1) + "월 " + Day + "일 " + Hour + "시 " + Minute + "분");
+        etDate.setText(format.format(calendar.getTime()));
 
+        // intent
         intent = getIntent();
         MainRequestCode = intent.getIntExtra("MainRequestCode", 0);
 
@@ -90,7 +100,7 @@ public class WriteActivity extends AppCompatActivity {
             Log.d("RequestCode Error", "");
         }
 
-        // etDate Click Listener
+        // etDate Touch Listener
         etDate.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -108,10 +118,7 @@ public class WriteActivity extends AppCompatActivity {
             public void onClick(View view) {
                 switch (view.getId()) {
                     case R.id.insert: // DB에 데이터 추가
-                        name = etName.getText().toString();
-                        place = etPlace.getText().toString();
-                        date = etDate.getText().toString();
-                        contexts = etContext.getText().toString();
+                        loadData();
 
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
                             db.open();
@@ -124,10 +131,7 @@ public class WriteActivity extends AppCompatActivity {
                         break;
 
                     case R.id.update: // DB에 있는 데이터 수정
-                        name = etName.getText().toString();
-                        place = etPlace.getText().toString();
-                        date = etDate.getText().toString();
-                        contexts = etContext.getText().toString();
+                        loadData();
 
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
                             db.open();
@@ -139,7 +143,6 @@ public class WriteActivity extends AppCompatActivity {
                         }
 
                         break;
-
                 }
             }
         };
@@ -147,6 +150,13 @@ public class WriteActivity extends AppCompatActivity {
         insert.setOnClickListener(onClickListener);
         update.setOnClickListener(onClickListener);
 
+    }
+
+    private void loadData() {
+        name = etName.getText().toString();
+        place = etPlace.getText().toString();
+        date = etDate.getText().toString();
+        contexts = etContext.getText().toString();
     }
 
     private void okDialog(String type) {
@@ -171,7 +181,20 @@ public class WriteActivity extends AppCompatActivity {
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
             TimePickerDialog t_dialog = new TimePickerDialog(context, mTimeSetListener, Hour, Minute, true);
             t_dialog.show();
-            etDate.setText(year + "년 " + (monthOfYear + 1) + "월 " + dayOfMonth + "일 ");
+
+            // 선택한 날짜로 formatting
+            format.applyPattern("yyyy년 MM월 dd일 ");
+            calendar.set(calendar.YEAR, year);
+            calendar.set(calendar.MONTH, monthOfYear);
+            calendar.set(calendar.DAY_OF_MONTH, dayOfMonth);
+
+            // DatePicker 날짜 변경
+            Year = year;
+            Month = monthOfYear;
+            Day = dayOfMonth;
+
+            // etDate 수정
+            etDate.setText(format.format(calendar.getTime()));
         }
     };
 
@@ -179,7 +202,17 @@ public class WriteActivity extends AppCompatActivity {
     private TimePickerDialog.OnTimeSetListener mTimeSetListener = new TimePickerDialog.OnTimeSetListener() {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            etDate.append(hourOfDay + "시 " + minute + "분");
+            // 선택한 시간으로 formatting
+            format.applyPattern("HH시 mm분");
+            calendar.set(calendar.HOUR_OF_DAY, hourOfDay);
+            calendar.set(calendar.MINUTE, minute);
+
+            // TimePicker 날짜 변경
+            Hour = hourOfDay;
+            Minute = minute;
+
+            // etDate 수정
+            etDate.append(format.format(calendar.getTime()));
         }
     };
 
