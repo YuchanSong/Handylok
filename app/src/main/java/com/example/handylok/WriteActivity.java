@@ -190,7 +190,7 @@ public class WriteActivity extends AppCompatActivity {
 
     private void okDialog(String type) {
         final SweetAlertDialog okDialog = new SweetAlertDialog(context);
-        okDialog.setTitleText(type);
+        okDialog.setTitleText("성공");
         okDialog.setContentText(type + " 성공했습니다.");
         okDialog.setConfirmText("확인");
 

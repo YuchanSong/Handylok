@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         db.open();
         dbOpen = true;
 
-        // get column
+        // get currentCursor
         currentCursor = db.fetchAllData();
 
         // setup custom listview
