@@ -80,8 +80,8 @@ public class DBAdapter {
         db.update(TABLE, values, "_id='" + id + "'", null);
     }
 
-//    public Cursor searchDataByName(String name) {
-//        return db.query(TABLE, null, "name = '" + name + "'", null, null, null, null);
-//    }
+    public Cursor searchDataByName(String name) {
+        return db.query(TABLE, null, "name like '%" + name + "%'", null, null, null, null);
+    }
 
 }

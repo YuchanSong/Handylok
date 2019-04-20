@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,10 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private long backPressedTime = 0;
 
     CustomAdapter listAdapter;
+    ListView listView = null;
     DBAdapter db;
     boolean dbOpen;
     Cursor currentCursor;
     int nowIndex;
+    EditText etFilter;
 
     private final static int addRequestCode = 100;
     private final static int modifyRequestCode = 500;
@@ -50,12 +55,21 @@ public class MainActivity extends AppCompatActivity {
         currentCursor = db.fetchAllData();
 
         // setup custom listview
-        ListView listView = findViewById(R.id.listView);
+        listView = findViewById(R.id.listView);
         listAdapter = new CustomAdapter(this);
         listView.setAdapter(listAdapter);
 
         listView.setOnItemClickListener(itemClickListener);
         listView.setOnItemLongClickListener(itemLongClickListener);
+
+        etFilter = findViewById(R.id.etFilter);
+    }
+
+    // 검색 버튼 클릭 했을 때
+    public void clickSearch(View v) {
+        Toast.makeText(context, "CLicked!", Toast.LENGTH_SHORT).show();
+        currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
+        listAdapter.notifyDataSetChanged();
     }
 
     //액션버튼 메뉴 액션바에 집어 넣기
