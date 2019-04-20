@@ -14,6 +14,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
+
 public class MainActivity extends AppCompatActivity {
 
     final Context context = this;
@@ -103,12 +105,38 @@ public class MainActivity extends AppCompatActivity {
     AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-            Toast.makeText(context, "삭제함", Toast.LENGTH_SHORT).show();
-            currentCursor.moveToPosition(position);
-            nowIndex = currentCursor.getInt(0); // id 열
-            db.delData(nowIndex);
-            currentCursor = db.fetchAllData();
-            listAdapter.notifyDataSetChanged();
+            final SweetAlertDialog dDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
+            dDialog.setTitleText("정말 지우시겠습니까?");
+            dDialog.setContentText("저장된 모든 내용이 제거됩니다.");
+            dDialog.setCancelText("안 지울래요");
+            dDialog.setConfirmText("지울게요!");
+            dDialog.showCancelButton(true);
+            dDialog.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                @Override
+                public void onClick(SweetAlertDialog sDialog) {
+                    sDialog.cancel();
+                }
+            });
+            dDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                @Override
+                public void onClick(SweetAlertDialog sDialog) {
+                    currentCursor.moveToPosition(position);
+                    nowIndex = currentCursor.getInt(0); // id 열
+                    db.delData(nowIndex);
+                    currentCursor = db.fetchAllData();
+                    listAdapter.notifyDataSetChanged();
+
+                    dDialog.showCancelButton(false);
+                    sDialog
+                            .setTitleText("삭제되었습니다!")
+                            .setContentText("등록된 정보를 깔끔하게 지웠습니다.")
+                            .setConfirmText("확인")
+                            .setConfirmClickListener(null)
+                            .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
+                }
+            });
+            dDialog.show();
+
             return true; // 다음 이벤트 계속 진행 false, 이벤트 완료 true
         }
     };
