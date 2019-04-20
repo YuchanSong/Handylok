@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     public void clickSearch(View v) {
         currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
         listAdapter.notifyDataSetChanged();
+        etFilter.clearFocus();
         hideKeyboard();
     }
 
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 currentCursor = db.fetchAllData();
                 listAdapter.notifyDataSetChanged();
                 etFilter.setText("");
+                etFilter.clearFocus();
                 break;
             case R.id.action_add:
                 // addButton Click Listner (Add - RequestCode 100)
