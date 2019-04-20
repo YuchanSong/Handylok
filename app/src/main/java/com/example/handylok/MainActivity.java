@@ -85,6 +85,10 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         switch(id) {
+            case android.R.id.home:
+                currentCursor = db.fetchAllData();
+                listAdapter.notifyDataSetChanged();
+                break;
             case R.id.action_add:
                 // addButton Click Listner (Add - RequestCode 100)
                 startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
@@ -249,6 +253,8 @@ public class MainActivity extends AppCompatActivity {
     private void setActionBar(String title) {
         getSupportActionBar().setTitle(title);
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(0xFF339999));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.action_refresh);
     }
 
 }
