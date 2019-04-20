@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -58,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         db.open();
         dbOpen = true;
 
-        // get column index
+        // get column
         currentCursor = db.fetchAllData();
 
         // setup custom listview
@@ -155,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
                     nowIndex = currentCursor.getInt(0); // id 열
                     db.delData(nowIndex);
                     currentCursor = db.fetchAllData();
+
                     listAdapter.notifyDataSetChanged();
 
                     dDialog.showCancelButton(false);
@@ -217,6 +216,7 @@ public class MainActivity extends AppCompatActivity {
             currentCursor.moveToPosition(position);
             viewHolder.nameView.setText(currentCursor.getString(1)); // 이름 열
             viewHolder.dateView.setText(currentCursor.getString(3)); // 일시 열
+//            viewHolder.label.setText( list.get(position) );
 
             return convertView;
         }
@@ -263,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         }
         etFilter.setText("");
         currentCursor = db.fetchAllData();
+
         listAdapter.notifyDataSetChanged();
     }
 

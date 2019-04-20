@@ -14,7 +14,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="이름"
+            android:text="제목"
             android:textColor="#000"/>
 
         <EditText
@@ -22,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
+            android:maxLength="15"
             android:focusable="true" />
 
     </LinearLayout>
@@ -41,7 +42,8 @@
             android:id="@+id/place"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="16dp" />
+            android:layout_marginLeft="16dp"
+            android:maxLength="15" />
 
     </LinearLayout>
 
