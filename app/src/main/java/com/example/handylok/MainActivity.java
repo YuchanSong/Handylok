@@ -71,12 +71,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Button Click Listner
+    // addButton Click Listner (Add)
     public void clickAdd(View view) {
         startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
     }
 
-    // List Item Click Listener
+    // list Item Click Listener (Modify)
     AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    // List Item Long Click Listener
+    // list Item Long Click Listener (Delete)
     AdapterView.OnItemLongClickListener itemLongClickListener = new AdapterView.OnItemLongClickListener() {
         @Override
         public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
