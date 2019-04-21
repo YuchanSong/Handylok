@@ -7,6 +7,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,23 +27,25 @@ import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 public class MainActivity extends AppCompatActivity {
 
     final Context context = this;
+
     private final long FINISH_INTERVAL_TIME = 2000;
     private long backPressedTime = 0;
 
     CustomAdapter listAdapter;
     ListView listView = null;
+
     DBAdapter db;
     boolean dbOpen;
     Cursor currentCursor;
     int nowIndex;
+
+    Spinner spiner;
     EditText etFilter;
 
     private final static int addRequestCode = 100;
     private final static int modifyRequestCode = 500;
 
     InputMethodManager imm;
-
-    Spinner spiner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,16 +77,21 @@ public class MainActivity extends AppCompatActivity {
         etFilter = findViewById(R.id.etFilter);
         spiner = findViewById(R.id.spinner);
 
+        etFilter.setOnKeyListener(enterKeyListner);
+
     }
 
-    // errorDialog
-    private void errorDialog(String text) {
-        final SweetAlertDialog errorDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
-        errorDialog.setTitleText("검색 실패");
-        errorDialog.setContentText(text);
-        errorDialog.setConfirmText("확인");
-        errorDialog.show();
-    }
+    // Enter 키 눌렀을 때 처리 (검색하기)
+    View.OnKeyListener enterKeyListner = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                clickSearch(v);
+                return true;
+            }
+            return false;
+        }
+    };
 
     // 검색 버튼 클릭 했을 때
     public void clickSearch(View v) {
@@ -302,6 +310,15 @@ public class MainActivity extends AppCompatActivity {
             db.close();
             dbOpen = false;
         }
+    }
+
+    // errorDialog
+    private void errorDialog(String text) {
+        final SweetAlertDialog errorDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
+        errorDialog.setTitleText("검색 실패");
+        errorDialog.setContentText(text);
+        errorDialog.setConfirmText("확인");
+        errorDialog.show();
     }
 
 }

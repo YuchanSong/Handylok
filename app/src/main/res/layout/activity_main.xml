@@ -24,6 +24,7 @@
             android:layout_weight="0.5"
             android:maxLines="1"
             android:maxLength="20"
+            android:singleLine="true"
             android:layout_marginRight="10dp"/>
 
         <Button
