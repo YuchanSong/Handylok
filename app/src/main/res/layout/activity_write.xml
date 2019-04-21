@@ -23,7 +23,9 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
             android:maxLength="15"
-            android:focusable="true" />
+            android:focusable="true"
+            android:singleLine="true"
+            android:nextFocusDown="@+id/place"/>
 
     </LinearLayout>
 
@@ -43,7 +45,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:maxLength="15" />
+            android:maxLength="15"
+            android:singleLine="true"
+            android:nextFocusDown="@+id/date" />
 
     </LinearLayout>
 
@@ -63,7 +67,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:focusable="false"
-            android:layout_marginLeft="16dp" />
+            android:layout_marginLeft="16dp"
+            android:singleLine="true"
+            android:nextFocusDown="@+id/context"/>
 
     </LinearLayout>
 

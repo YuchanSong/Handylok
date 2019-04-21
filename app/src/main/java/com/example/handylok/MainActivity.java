@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    // errorDialog
     private void errorDialog(String text) {
         final SweetAlertDialog errorDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
         errorDialog.setTitleText("검색 실패");
@@ -302,6 +303,5 @@ public class MainActivity extends AppCompatActivity {
             dbOpen = false;
         }
     }
-
 
 }
