@@ -10,20 +10,20 @@
         android:weightSum="1"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/textView"
+        <Spinner
+            android:id="@+id/spinner"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="제목"
-            android:layout_weight="0.15"
-            android:textColor="#000"
-            android:textSize="24sp"/>
+            android:layout_weight="0.3"
+            android:entries="@array/search_arrays"/>
 
         <EditText
             android:id="@+id/etFilter"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="0.65"
+            android:layout_weight="0.5"
+            android:maxLines="1"
+            android:maxLength="20"
             android:layout_marginRight="10dp"/>
 
         <Button

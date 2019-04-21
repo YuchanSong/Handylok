@@ -17,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private final static int modifyRequestCode = 500;
 
     InputMethodManager imm;
+
+    Spinner spiner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +72,8 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemLongClickListener(itemLongClickListener);
 
         etFilter = findViewById(R.id.etFilter);
+        spiner = findViewById(R.id.spinner);
+
     }
 
     private void errorDialog(String text) {
@@ -84,7 +89,15 @@ public class MainActivity extends AppCompatActivity {
         if (etFilter.getText().toString().getBytes().length <= 0) {
             errorDialog("검색창에 검색해주세요!");
         } else {
-            currentCursor = db.searchDataByName(String.valueOf(etFilter.getText()));
+            String column = spiner.getSelectedItem().toString();
+            String data = etFilter.getText().toString();
+
+            if (column.equals("제목")) column = "name";
+            else if (column.equals("장소")) column = "place";
+            else if (column.equals("일시")) column = "date";
+            else column = "contexts";
+
+            currentCursor = db.searchDataByColumn(column, data);
             listAdapter.notifyDataSetChanged();
             etFilter.clearFocus();
             hideKeyboard();
@@ -229,7 +242,6 @@ public class MainActivity extends AppCompatActivity {
             currentCursor.moveToPosition(position);
             viewHolder.nameView.setText(currentCursor.getString(1)); // 이름 열
             viewHolder.dateView.setText(currentCursor.getString(3)); // 일시 열
-//            viewHolder.label.setText( list.get(position) );
 
             return convertView;
         }
@@ -274,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
             db.open();
             dbOpen = true;
         }
+        spiner.setSelection(0);
         etFilter.setText("");
         currentCursor = db.fetchAllData();
 

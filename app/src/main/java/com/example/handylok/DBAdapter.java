@@ -80,8 +80,9 @@ public class DBAdapter {
         db.update(TABLE, values, "_id='" + id + "'", null);
     }
 
-    public Cursor searchDataByName(String name) {
-        return db.query(TABLE, null, "name like '%" + name + "%'", null, null, null, null);
+    public Cursor searchDataByColumn(String column, String data) {
+        return db.query(TABLE, null, column + " like '%" + data + "%'", null, null, null, null);
+
     }
 
 }
