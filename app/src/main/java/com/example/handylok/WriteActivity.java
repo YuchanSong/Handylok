@@ -11,8 +11,14 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -69,12 +75,14 @@ public class WriteActivity extends AppCompatActivity {
     int Hour, Minute;
 
     DBAdapter db;
+    DBAdapter.OpenHelper mHelper;
+    SQLiteDatabase dbs = null;
     EditText etName;
     EditText etPlace;
     EditText etDate;
     EditText etContext;
 
-    int id;
+    int id = -1;
     String name;
     String place;
     String date;
@@ -94,6 +102,7 @@ public class WriteActivity extends AppCompatActivity {
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}; //권한 설정 변수
     private static final int MULTIPLE_PERMISSIONS = 101; //권한 동의 여부 문의 후 CallBack 함수에 쓰일 변수
     private ImageView mImageView;
+    Cursor currentCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +111,7 @@ public class WriteActivity extends AppCompatActivity {
 
         setActionBar("내 손안에 작은 회의록");
 
+        mImageView = findViewById(R.id.mImageView);
         etName = findViewById(R.id.name);
         etPlace = findViewById(R.id.place);
         etDate = findViewById(R.id.date);
@@ -111,6 +121,8 @@ public class WriteActivity extends AppCompatActivity {
         final Button update = findViewById(R.id.update);
 
         db = new DBAdapter(WriteActivity.this);
+        mHelper = db.new OpenHelper(context);
+        dbs = mHelper.getWritableDatabase();
 
         // 현재 날짜 저장 (datePicker 초기화 데이터)
         calendar = Calendar.getInstance();
@@ -135,7 +147,7 @@ public class WriteActivity extends AppCompatActivity {
             Log.d("modifyMode", "수정 모드");
             insert.setVisibility(View.GONE);
 
-            id = intent.getIntExtra("_id", 0);
+            id = intent.getIntExtra("_id", -1);
             name = intent.getStringExtra("name");
             place = intent.getStringExtra("place");
             date = intent.getStringExtra("date");
@@ -169,7 +181,7 @@ public class WriteActivity extends AppCompatActivity {
                     String address = getCurrentAddress(latitude, longitude);
                     etPlace.setText(address);
 
-                    Toast.makeText(WriteActivity.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
+//                    Toast.makeText(WriteActivity.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
                 }
                 return false;
             }
@@ -196,8 +208,25 @@ public class WriteActivity extends AppCompatActivity {
                         loadData();
 
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
+                            // 작성글 디비에 추가
                             db.open();
-                            db.addData(name, place, date, contexts);
+                            long i = (db.addData(name, place, date, contexts)) - 1;
+                            Log.d("추가 인덱스 return", String.valueOf(i));
+
+                            // 이미지 byte 불러오기
+                            byte[] byteImage = getByteArray();
+
+                            // 이미지가 추가되지 않았다면 insert 하지 않는다.
+                            if (byteImage != null) {
+                                String sql = "INSERT INTO table_image values(?, ?)";
+                                SQLiteStatement insertStmt = dbs.compileStatement(sql);
+                                insertStmt.clearBindings();
+                                insertStmt.bindString(1, String.valueOf(i));
+                                insertStmt.bindBlob(2, byteImage);
+                                insertStmt.execute();
+                                Log.d("추가한 인덱스", String.valueOf(i));
+                            }
+
                             db.close();
                             okDialog("추가");
                         } else {
@@ -225,8 +254,24 @@ public class WriteActivity extends AppCompatActivity {
         insert.setOnClickListener(onClickListener);
         update.setOnClickListener(onClickListener);
 
-        mImageView = findViewById(R.id.mImageView);
+        // 수정모드 일때만 이미지 조회하기
+        if (MainRequestCode == modifyMode) {
+            try {
+                String selectSql = "SELECT image_data FROM table_image WHERE image_id = '" + id + "'";
+                Cursor monthCursor = dbs.rawQuery(selectSql, null);
+                Log.d("조회 인덱스", String.valueOf(id));
 
+                while (monthCursor.moveToNext()) {
+                    byte[] byteImage = monthCursor.getBlob(0);
+                    Bitmap bm = getImage(byteImage);
+                    mImageView.setImageBitmap(bm);
+                }
+                monthCursor.close();
+            } catch (Exception e) {
+            } finally {
+                mHelper.close();
+            }
+        }
     }
 
     //액션버튼 메뉴 액션바에 집어 넣기
@@ -254,7 +299,6 @@ public class WriteActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         takePhoto();
-//                        doTakePhotoAction();
                     }
                 };
 
@@ -262,7 +306,6 @@ public class WriteActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         goToAlbum();
-//                        doTakeAlbumAction();
                     }
                 };
 
@@ -609,14 +652,15 @@ public class WriteActivity extends AppCompatActivity {
                             public void onScanCompleted(String path, Uri uri) {
                             }
                         });
-                break;//
+                break;
             case CROP_FROM_CAMERA:
                 try { //저는 bitmap 형태의 이미지로 가져오기 위해 아래와 같이 작업하였으며 Thumbnail을 추출하였습니다.
-
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
-                    Bitmap thumbImage = ThumbnailUtils.extractThumbnail(bitmap, 128, 128);
-                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
-                    thumbImage.compress(Bitmap.CompressFormat.JPEG, 100, bs); //이미지가 클 경우 OutOfMemoryException 발생이 예상되어 압축
+//                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+//                    Bitmap thumbImage = ThumbnailUtils.extractThumbnail(bitmap, 128, 128);
+//                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+//                    thumbImage.compress(Bitmap.CompressFormat.JPEG, 100, bs); //이미지가 클 경우 OutOfMemoryException 발생이 예상되어 압축
+                    byte[] byteImage = getByteArray();
+                    Bitmap thumbImage = getImage(byteImage);
 
                     //여기서는 ImageView에 setImageBitmap을 활용하여 해당 이미지에 그림을 띄우시면 됩니다.
                     mImageView.setImageBitmap(thumbImage);
@@ -624,12 +668,10 @@ public class WriteActivity extends AppCompatActivity {
                     Log.e("ERROR", e.getMessage().toString());
                 }
                 break;
-
         }
     }
 
     //Android N crop image (이 부분에서 몇일동안 정신 못차렸습니다 ㅜ)
-
     //모든 작업에 있어 사전에 FALG_GRANT_WRITE_URI_PERMISSION과 READ 퍼미션을 줘야 uri를 활용한 작업에 지장을 받지 않는다는 것이 핵심입니다.
     public void cropImage() {
         this.grantUriPermission("com.android.camera", photoUri,
@@ -681,11 +723,32 @@ public class WriteActivity extends AppCompatActivity {
 
             i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
             startActivityForResult(i, CROP_FROM_CAMERA);
+        }
+    }
 
+    // 이미지 저장하기
+    public byte[] getByteArray() {
+        byte[] data = null;
 
+        try {
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+            Bitmap thumbImage = ThumbnailUtils.extractThumbnail(bitmap, 128, 128);
+            ByteArrayOutputStream bs = new ByteArrayOutputStream();
+            thumbImage.compress(Bitmap.CompressFormat.JPEG, 100, bs); //이미지가 클 경우 OutOfMemoryException 발생이 예상되어 압축
+            data = bs.toByteArray();
+        } catch (Exception e) {
+            Log.e("ERROR", e.getMessage());
         }
 
+        return data;
     }
+
+    // 이미지 가져오기
+    public Bitmap getImage(byte[] b) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(b, 0, b.length);
+        return bitmap;
+    }
+
 
     public boolean checkLocationServicesStatus() {
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
