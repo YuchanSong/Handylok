@@ -134,9 +134,11 @@ public class MainActivity extends AppCompatActivity {
                 etFilter.clearFocus();
                 break;
             case R.id.action_add:
-                // addButton Click Listner (Add - RequestCode 100)
+//                 addButton Click Listner (Add - RequestCode 100)
                 startActivityForResult(new Intent(context, WriteActivity.class).putExtra("MainRequestCode", addRequestCode), addRequestCode);
+//                startActivity(new Intent(MainActivity.this, GpsTracker.class));
                 break;
+
         }
 
         return super.onOptionsItemSelected(item);
