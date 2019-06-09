@@ -16,6 +16,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -28,20 +29,24 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.constraint.solver.widgets.Rectangle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -50,6 +55,7 @@ import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -77,6 +83,9 @@ public class WriteActivity extends AppCompatActivity {
     DBAdapter db;
     DBAdapter.OpenHelper mHelper;
     SQLiteDatabase dbs = null;
+
+    Cursor monthCursor = null;
+
     EditText etName;
     EditText etPlace;
     EditText etDate;
@@ -102,7 +111,7 @@ public class WriteActivity extends AppCompatActivity {
     private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}; //권한 설정 변수
     private static final int MULTIPLE_PERMISSIONS = 101; //권한 동의 여부 문의 후 CallBack 함수에 쓰일 변수
     private ImageView mImageView;
-    Cursor currentCursor;
+    byte[] byteImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +128,7 @@ public class WriteActivity extends AppCompatActivity {
 
         final Button insert = findViewById(R.id.insert);
         final Button update = findViewById(R.id.update);
+
 
         db = new DBAdapter(WriteActivity.this);
         mHelper = db.new OpenHelper(context);
@@ -167,7 +177,6 @@ public class WriteActivity extends AppCompatActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     if (!checkLocationServicesStatus()) {
-
                         showDialogForLocationServiceSetting();
                     }else {
                         checkRunTimePermission();
@@ -196,6 +205,55 @@ public class WriteActivity extends AppCompatActivity {
                     d_dialog.show();
                 }
                 return false;
+            }
+        });
+
+        mImageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View arg0, MotionEvent arg1) {
+                switch (arg1.getAction()) {
+                    case MotionEvent.ACTION_UP:
+                        final Bitmap bm = getImage(byteImage); // 이미지 가져오기
+
+                        DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                saveBitmaptoJpeg(bm, "Handyrok", "save");
+                            }
+                        };
+
+                        DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setPositiveButton("저장", saveListener)
+                                .setNegativeButton("닫기", cancelListner);
+
+                        final AlertDialog dialog = builder.create();
+                        LayoutInflater inflater = getLayoutInflater();
+                        View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
+
+                        ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
+
+                        // 이미지 set
+                        dialogImage.setImageBitmap(bm);
+
+                        // 이미지 크게
+                        dialogImage.getLayoutParams().height = 600;
+                        dialogImage.requestLayout();
+
+                        // setView
+                        dialog.setView(dialogLayout);
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+                        dialog.show();
+                        break;
+                }
+                return true;
             }
         });
 
@@ -258,11 +316,12 @@ public class WriteActivity extends AppCompatActivity {
         if (MainRequestCode == modifyMode) {
             try {
                 String selectSql = "SELECT image_data FROM table_image WHERE image_id = '" + id + "'";
-                Cursor monthCursor = dbs.rawQuery(selectSql, null);
+                monthCursor = dbs.rawQuery(selectSql, null);
                 Log.d("조회 인덱스", String.valueOf(id));
 
                 while (monthCursor.moveToNext()) {
-                    byte[] byteImage = monthCursor.getBlob(0);
+//                    byte[] byteImage = monthCursor.getBlob(0);
+                    byteImage = monthCursor.getBlob(0);
                     Bitmap bm = getImage(byteImage);
                     mImageView.setImageBitmap(bm);
                 }
@@ -271,6 +330,33 @@ public class WriteActivity extends AppCompatActivity {
             } finally {
                 mHelper.close();///
             }
+        }
+    }
+
+    public void saveBitmaptoJpeg(Bitmap bitmap, String folder, String name){
+        String ex_storage =Environment.getExternalStorageDirectory().getAbsolutePath();
+        Log.d("ex_storage", ex_storage);
+        // Get Absolute Path in External Sdcard
+        String foler_name = "/"+folder+"/";
+        String file_name = name+".jpg";
+        String string_path = ex_storage+foler_name;
+
+        File file_path;
+        try{
+            file_path = new File(string_path);
+            if(!file_path.isDirectory()){
+                file_path.mkdirs();
+            }
+            FileOutputStream out = new FileOutputStream(string_path+file_name);
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+            Toast.makeText(WriteActivity.this, "저장되었음", Toast.LENGTH_SHORT).show();
+            out.close();
+
+        }catch(FileNotFoundException exception){
+            Log.e("FileNotFoundException", exception.getMessage());
+        }catch(IOException exception){
+            Log.e("IOException", exception.getMessage());
         }
     }
 
