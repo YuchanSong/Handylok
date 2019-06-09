@@ -609,7 +609,7 @@ public class WriteActivity extends AppCompatActivity {
                             public void onScanCompleted(String path, Uri uri) {
                             }
                         });
-                break;
+                break;//
             case CROP_FROM_CAMERA:
                 try { //저는 bitmap 형태의 이미지로 가져오기 위해 아래와 같이 작업하였으며 Thumbnail을 추출하였습니다.
 
