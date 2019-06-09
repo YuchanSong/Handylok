@@ -600,7 +600,6 @@ public class WriteActivity extends AppCompatActivity {
                     } else if (permissions[i].equals(this.permissions[2])) {
                         if (grandResults[i] != PackageManager.PERMISSION_GRANTED) {
                             showNoPermissionToastAndFinish();
-
                         }
                     }
                 }
@@ -740,15 +739,9 @@ public class WriteActivity extends AppCompatActivity {
                         });
                 break;
             case CROP_FROM_CAMERA:
-                try { //저는 bitmap 형태의 이미지로 가져오기 위해 아래와 같이 작업하였으며 Thumbnail을 추출하였습니다.
-//                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
-//                    Bitmap thumbImage = ThumbnailUtils.extractThumbnail(bitmap, 128, 128);
-//                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
-//                    thumbImage.compress(Bitmap.CompressFormat.JPEG, 100, bs); //이미지가 클 경우 OutOfMemoryException 발생이 예상되어 압축
+                try {
                     byte[] byteImage = getByteArray();
                     Bitmap thumbImage = getImage(byteImage);
-
-                    //여기서는 ImageView에 setImageBitmap을 활용하여 해당 이미지에 그림을 띄우시면 됩니다.
                     mImageView.setImageBitmap(thumbImage);
                 } catch (Exception e) {
                     Log.e("ERROR", e.getMessage().toString());
