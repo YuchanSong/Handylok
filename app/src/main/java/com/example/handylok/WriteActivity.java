@@ -269,7 +269,7 @@ public class WriteActivity extends AppCompatActivity {
                 monthCursor.close();
             } catch (Exception e) {
             } finally {
-                mHelper.close();
+                mHelper.close();//
             }
         }
     }
