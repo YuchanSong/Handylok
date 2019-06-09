@@ -5,17 +5,26 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
+import android.media.MediaScannerConnection;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,14 +35,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -70,6 +86,14 @@ public class WriteActivity extends AppCompatActivity {
     private static final int PERMISSIONS_REQUEST_CODE = 100;
     String[] REQUIRED_PERMISSIONS  = {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
+    private static final int PICK_FROM_CAMERA = 1; //카메라 촬영으로 사진 가져오기
+    private static final int PICK_FROM_ALBUM = 2; //앨범에서 사진 가져오기
+    private static final int CROP_FROM_CAMERA = 3; //가져온 사진을 자르기 위한 변수
+    Uri photoUri;
+
+    private String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}; //권한 설정 변수
+    private static final int MULTIPLE_PERMISSIONS = 101; //권한 동의 여부 문의 후 CallBack 함수에 쓰일 변수
+    private ImageView mImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -201,6 +225,8 @@ public class WriteActivity extends AppCompatActivity {
         insert.setOnClickListener(onClickListener);
         update.setOnClickListener(onClickListener);
 
+        mImageView = findViewById(R.id.mImageView);
+
     }
 
     //액션버튼 메뉴 액션바에 집어 넣기
@@ -222,10 +248,105 @@ public class WriteActivity extends AppCompatActivity {
             case R.id.action_share:
                 break;
             case R.id.action_attach:
+                checkPermissions(); //권한 묻기
+
+                DialogInterface.OnClickListener cameraListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        takePhoto();
+//                        doTakePhotoAction();
+                    }
+                };
+
+                DialogInterface.OnClickListener albumListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        goToAlbum();
+//                        doTakeAlbumAction();
+                    }
+                };
+
+
+                DialogInterface.OnClickListener cancelListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                };
+
+                new AlertDialog.Builder(this)
+                        .setTitle("업로드할 이미지 선택")
+                        .setPositiveButton("사진촬영", cameraListener)
+                        .setNeutralButton("앨범선택", albumListener)
+                        .setNegativeButton("취소", cancelListener)
+                        .show();
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void takePhoto() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); //사진을 찍기 위하여 설정합니다.
+        File photoFile = null;
+        try {
+            photoFile = createImageFile();
+        } catch (IOException e) {
+            Toast.makeText(WriteActivity.this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();              finish();
+        }
+        if (photoFile != null) {
+            photoUri = FileProvider.getUriForFile(WriteActivity.this,
+                    "com.example.handylok.provider", photoFile); //FileProvider의 경우 이전 포스트를 참고하세요.
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri); //사진을 찍어 해당 Content uri를 photoUri에 적용시키기 위함
+            startActivityForResult(intent, PICK_FROM_CAMERA);
+        }
+    }
+
+
+    // Android M에서는 Uri.fromFile 함수를 사용하였으나 7.0부터는 이 함수를 사용할 시 FileUriExposedException이
+    // 발생하므로 아래와 같이 함수를 작성합니다. 이전 포스트에 참고한 영문 사이트를 들어가시면 자세한 설명을 볼 수 있습니다.
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
+        String imageFileName = "IP" + timeStamp + "_";
+        File storageDir = new File(Environment.getExternalStorageDirectory() + "/test/"); //test라는 경로에 이미지를 저장하기 위함
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
+        File image = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
+        return image;
+    }
+
+    private void goToAlbum() {
+        Intent intent = new Intent(Intent.ACTION_PICK); //ACTION_PICK 즉 사진을 고르겠다!
+        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        startActivityForResult(intent, PICK_FROM_ALBUM);
+    }
+
+    //권한 획득에 동의를 하지 않았을 경우 아래 Toast 메세지를 띄우며 해당 Activity를 종료시킵니다.
+    private void showNoPermissionToastAndFinish() {
+        Toast.makeText(this, "권한 요청에 동의 해주셔야 이용 가능합니다. 설정에서 권한 허용 하시기 바랍니다.", Toast.LENGTH_SHORT).show();
+        finish();
+    }
+
+    private boolean checkPermissions() {
+        int result;
+        List<String> permissionList = new ArrayList<>();
+        for (String pm : permissions) {
+            result = ContextCompat.checkSelfPermission(this, pm);
+            if (result != PackageManager.PERMISSION_GRANTED) { //사용자가 해당 권한을 가지고 있지 않을 경우 리스트에 해당 권한명 추가
+                permissionList.add(pm);
+            }
+        }
+        if (!permissionList.isEmpty()) { //권한이 추가되었으면 해당 리스트가 empty가 아니므로 request 즉 권한을 요청합니다.
+            ActivityCompat.requestPermissions(this, permissionList.toArray(new String[permissionList.size()]), MULTIPLE_PERMISSIONS);
+            return false;
+        }
+        return true;
     }
 
     private void loadData() {
@@ -308,14 +429,10 @@ public class WriteActivity extends AppCompatActivity {
                                            @NonNull int[] grandResults) {
 
         if ( permsRequestCode == PERMISSIONS_REQUEST_CODE && grandResults.length == REQUIRED_PERMISSIONS.length) {
-
             // 요청 코드가 PERMISSIONS_REQUEST_CODE 이고, 요청한 퍼미션 개수만큼 수신되었다면
-
             boolean check_result = true;
 
-
             // 모든 퍼미션을 허용했는지 체크합니다.
-
             for (int result : grandResults) {
                 if (result != PackageManager.PERMISSION_GRANTED) {
                     check_result = false;
@@ -323,29 +440,45 @@ public class WriteActivity extends AppCompatActivity {
                 }
             }
 
-
             if ( check_result ) {
-
                 //위치 값을 가져올 수 있음
                 ;
             }
             else {
                 // 거부한 퍼미션이 있다면 앱을 사용할 수 없는 이유를 설명해주고 앱을 종료합니다.2 가지 경우가 있습니다.
-
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[0])
                         || ActivityCompat.shouldShowRequestPermissionRationale(this, REQUIRED_PERMISSIONS[1])) {
 
                     Toast.makeText(WriteActivity.this, "퍼미션이 거부되었습니다. 앱을 다시 실행하여 퍼미션을 허용해주세요.", Toast.LENGTH_LONG).show();
                     finish();
-
-
                 }else {
-
                     Toast.makeText(WriteActivity.this, "퍼미션이 거부되었습니다. 설정(앱 정보)에서 퍼미션을 허용해야 합니다. ", Toast.LENGTH_LONG).show();
-
                 }
             }
+        }
+        else if (permsRequestCode == MULTIPLE_PERMISSIONS) {
+            if (grandResults.length > 0) {
+                for (int i = 0; i < permissions.length; i++) {
+                    if (permissions[i].equals(this.permissions[0])) {
+                        if (grandResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            showNoPermissionToastAndFinish();
+                        }
+                    } else if (permissions[i].equals(this.permissions[1])) {
+                        if (grandResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            showNoPermissionToastAndFinish();
 
+                        }
+                    } else if (permissions[i].equals(this.permissions[2])) {
+                        if (grandResults[i] != PackageManager.PERMISSION_GRANTED) {
+                            showNoPermissionToastAndFinish();
+
+                        }
+                    }
+                }
+            } else {
+                showNoPermissionToastAndFinish();
+            }
+            return;
         }
     }
 
@@ -364,14 +497,9 @@ public class WriteActivity extends AppCompatActivity {
 
             // 2. 이미 퍼미션을 가지고 있다면
             // ( 안드로이드 6.0 이하 버전은 런타임 퍼미션이 필요없기 때문에 이미 허용된 걸로 인식합니다.)
-
-
             // 3.  위치 값을 가져올 수 있음
 
-
-
         } else {  //2. 퍼미션 요청을 허용한 적이 없다면 퍼미션 요청이 필요합니다. 2가지 경우(3-1, 4-1)가 있습니다.
-
             // 3-1. 사용자가 퍼미션 거부를 한 적이 있는 경우에는
             if (ActivityCompat.shouldShowRequestPermissionRationale(WriteActivity.this, REQUIRED_PERMISSIONS[0])) {
 
@@ -381,28 +509,23 @@ public class WriteActivity extends AppCompatActivity {
                 ActivityCompat.requestPermissions(WriteActivity.this, REQUIRED_PERMISSIONS,
                         PERMISSIONS_REQUEST_CODE);
 
-
             } else {
                 // 4-1. 사용자가 퍼미션 거부를 한 적이 없는 경우에는 퍼미션 요청을 바로 합니다.
                 // 요청 결과는 onRequestPermissionResult에서 수신됩니다.
                 ActivityCompat.requestPermissions(WriteActivity.this, REQUIRED_PERMISSIONS,
                         PERMISSIONS_REQUEST_CODE);
             }
-
         }
-
     }
-
 
     public String getCurrentAddress( double latitude, double longitude) {
 
-        //지오코더... GPS를 주소로 변환
+        //지오코더 GPS를 주소로 변환
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         List<Address> addresses;
 
         try {
-
             addresses = geocoder.getFromLocation(
                     latitude,
                     longitude,
@@ -456,27 +579,112 @@ public class WriteActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         switch (requestCode) {
-
             case GPS_ENABLE_REQUEST_CODE:
-
                 //사용자가 GPS 활성 시켰는지 검사
                 if (checkLocationServicesStatus()) {
                     if (checkLocationServicesStatus()) {
-
                         Log.d("@@@", "onActivityResult : GPS 활성화 되있음");
                         checkRunTimePermission();
                         return;
                     }
                 }
-
                 break;
+            case PICK_FROM_ALBUM:
+                if(data==null){
+                    return;
+                }
+                photoUri = data.getData();
+                cropImage();
+                break;
+            case PICK_FROM_CAMERA:
+                cropImage();
+                MediaScannerConnection.scanFile(WriteActivity.this, //앨범에 사진을 보여주기 위해 Scan을 합니다.
+                        new String[]{photoUri.getPath()}, null,
+                        new MediaScannerConnection.OnScanCompletedListener() {
+                            public void onScanCompleted(String path, Uri uri) {
+                            }
+                        });
+                break;
+            case CROP_FROM_CAMERA:
+                try { //저는 bitmap 형태의 이미지로 가져오기 위해 아래와 같이 작업하였으며 Thumbnail을 추출하였습니다.
+
+                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+                    Bitmap thumbImage = ThumbnailUtils.extractThumbnail(bitmap, 128, 128);
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    thumbImage.compress(Bitmap.CompressFormat.JPEG, 100, bs); //이미지가 클 경우 OutOfMemoryException 발생이 예상되어 압축
+
+                    //여기서는 ImageView에 setImageBitmap을 활용하여 해당 이미지에 그림을 띄우시면 됩니다.
+                    mImageView.setImageBitmap(thumbImage);
+                } catch (Exception e) {
+                    Log.e("ERROR", e.getMessage().toString());
+                }
+                break;
+
         }
+    }
+
+    //Android N crop image (이 부분에서 몇일동안 정신 못차렸습니다 ㅜ)
+
+    //모든 작업에 있어 사전에 FALG_GRANT_WRITE_URI_PERMISSION과 READ 퍼미션을 줘야 uri를 활용한 작업에 지장을 받지 않는다는 것이 핵심입니다.
+    public void cropImage() {
+        this.grantUriPermission("com.android.camera", photoUri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(photoUri, "image/*");
+
+        List<ResolveInfo> list = getPackageManager().queryIntentActivities(intent, 0);
+        grantUriPermission(list.get(0).activityInfo.packageName, photoUri,
+                Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        int size = list.size();
+        if (size == 0) {
+            Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        } else {
+            Toast.makeText(this, "용량이 큰 사진의 경우 시간이 오래 걸릴 수 있습니다.", Toast.LENGTH_SHORT).show();
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            intent.putExtra("crop", "true");
+            intent.putExtra("aspectX", 4);
+            intent.putExtra("aspectY", 3);
+            intent.putExtra("scale", true);
+            File croppedFileName = null;
+            try {
+                croppedFileName = createImageFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            File folder = new File(Environment.getExternalStorageDirectory() + "/test/");
+            File tempFile = new File(folder.toString(), croppedFileName.getName());
+
+            photoUri = FileProvider.getUriForFile(WriteActivity.this,
+                    "com.example.handylok.provider", tempFile);
+
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            intent.putExtra("return-data", false);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            intent.putExtra("outputFormat", Bitmap.CompressFormat.JPEG.toString()); //Bitmap 형태로 받기 위해 해당 작업 진행
+
+            Intent i = new Intent(intent);
+            ResolveInfo res = list.get(0);
+            i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            i.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            grantUriPermission(res.activityInfo.packageName, photoUri,
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+            i.setComponent(new ComponentName(res.activityInfo.packageName, res.activityInfo.name));
+            startActivityForResult(i, CROP_FROM_CAMERA);
+
+
+        }
+
     }
 
     public boolean checkLocationServicesStatus() {
