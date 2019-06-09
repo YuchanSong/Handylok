@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(new Intent(MainActivity.this, GpsTracker.class));
                 break;
 
-        }
+        }//
 
         return super.onOptionsItemSelected(item);
     }
