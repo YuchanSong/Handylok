@@ -377,6 +377,14 @@ public class WriteActivity extends AppCompatActivity {
                 finish();
                 break;
             case R.id.action_share:
+                Intent email = new Intent(Intent.ACTION_SEND);
+                email.setType("plain/text");
+                email.putExtra(Intent.EXTRA_SUBJECT, "회의 제목 : " + name);
+                email.putExtra(android.content.Intent.EXTRA_STREAM, photoUri);
+                email.putExtra(Intent.EXTRA_TEXT,"장소 : " + place + "\n"
+                + "시간 : " + date + "\n" + "내용 : " + contexts + "\n");
+
+                startActivity(Intent.createChooser(email, "Send mail"));
                 break;
             case R.id.action_attach:
                 checkPermissions(); //권한 묻기
