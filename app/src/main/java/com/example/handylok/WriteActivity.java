@@ -1,7 +1,6 @@
 package com.example.handylok;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -16,10 +15,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -29,7 +25,6 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.constraint.solver.widgets.Rectangle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -46,13 +41,11 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.ontbee.legacyforks.cn.pedant.SweetAlert.SweetAlertDialog;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -152,6 +145,10 @@ public class WriteActivity extends AppCompatActivity {
 
         if (MainRequestCode == addMode) {
             Log.d("addMode", "추가 모드");
+
+            // etPlace 수정
+            etPlace.setText(currentLocation());
+
             update.setVisibility(View.GONE);
         } else if (MainRequestCode == modifyMode) {
             Log.d("modifyMode", "수정 모드");
@@ -171,31 +168,6 @@ public class WriteActivity extends AppCompatActivity {
             Log.d("RequestCode Error", "");
         }
 
-        // place Touch Listener
-        etPlace.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_UP) {
-                    if (!checkLocationServicesStatus()) {
-                        showDialogForLocationServiceSetting();
-                    }else {
-                        checkRunTimePermission();
-                    }
-
-                    gpsTracker = new GpsTracker(WriteActivity.this);
-
-                    double latitude = gpsTracker.getLatitude();
-                    double longitude = gpsTracker.getLongitude();
-
-                    String address = getCurrentAddress(latitude, longitude);
-                    etPlace.setText(address);
-
-//                    Toast.makeText(WriteActivity.this, "현재위치 \n위도 " + latitude + "\n경도 " + longitude, Toast.LENGTH_LONG).show();
-                }
-                return false;
-            }
-        });
-
         // etDate Touch Listener
         etDate.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -208,49 +180,54 @@ public class WriteActivity extends AppCompatActivity {
             }
         });
 
+        // ImageView Touch Listener
         mImageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View arg0, MotionEvent arg1) {
                 switch (arg1.getAction()) {
                     case MotionEvent.ACTION_UP:
+                        if (byteImage == null)
+                            break;
+
                         final Bitmap bm = getImage(byteImage); // 이미지 가져오기
 
                         DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                saveBitmaptoJpeg(bm, "Handyrok", "save");
-                            }
-                        };
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    saveBitmaptoJpeg(bm, "Handyrok", "save");
+                                }
+                            };
 
-                        DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        };
+                            DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            };
 
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setPositiveButton("저장", saveListener)
-                                .setNegativeButton("닫기", cancelListner);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                            builder.setPositiveButton("저장", saveListener)
+                                    .setNegativeButton("닫기", cancelListner);
 
-                        final AlertDialog dialog = builder.create();
-                        LayoutInflater inflater = getLayoutInflater();
-                        View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
+                            final AlertDialog dialog = builder.create();
+                            LayoutInflater inflater = getLayoutInflater();
+                            View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
 
-                        ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
+                            ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
 
-                        // 이미지 set
-                        dialogImage.setImageBitmap(bm);
+                            // 이미지 set
+                            dialogImage.setImageBitmap(bm);
 
-                        // 이미지 크게
-                        dialogImage.getLayoutParams().height = 600;
-                        dialogImage.requestLayout();
+                            // 이미지 크게
+                            dialogImage.getLayoutParams().height = 600;
+                            dialogImage.requestLayout();
 
-                        // setView
-                        dialog.setView(dialogLayout);
-                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                            // setView
+                            dialog.setView(dialogLayout);
+                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-                        dialog.show();
+                            dialog.show();
+
                         break;
                 }
                 return true;
@@ -331,6 +308,16 @@ public class WriteActivity extends AppCompatActivity {
                 mHelper.close();///
             }
         }
+    }
+
+    private String currentLocation() {
+        gpsTracker = new GpsTracker(WriteActivity.this);
+
+        double latitude = gpsTracker.getLatitude();
+        double longitude = gpsTracker.getLongitude();
+
+        String address = getCurrentAddress(latitude, longitude);
+        return address;
     }
 
     public void saveBitmaptoJpeg(Bitmap bitmap, String folder, String name){
@@ -439,9 +426,6 @@ public class WriteActivity extends AppCompatActivity {
         }
     }
 
-
-    // Android M에서는 Uri.fromFile 함수를 사용하였으나 7.0부터는 이 함수를 사용할 시 FileUriExposedException이
-    // 발생하므로 아래와 같이 함수를 작성합니다. 이전 포스트에 참고한 영문 사이트를 들어가시면 자세한 설명을 볼 수 있습니다.
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
