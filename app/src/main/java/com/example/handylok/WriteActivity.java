@@ -146,7 +146,6 @@ public class WriteActivity extends AppCompatActivity {
         if (MainRequestCode == addMode) {
             Log.d("addMode", "추가 모드");
 
-            // etPlace 수정
             etPlace.setText(currentLocation());
             update.setVisibility(View.GONE);
         } else if (MainRequestCode == modifyMode) {
@@ -174,7 +173,6 @@ public class WriteActivity extends AppCompatActivity {
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     // etPlace 수정
                     checkRunTimePermission();
-                    etPlace.setText(currentLocation());
                 }
                 return false;
             }
@@ -192,60 +190,6 @@ public class WriteActivity extends AppCompatActivity {
                 return false;
             }
         });
-
-        // ImageView Touch Listener
-//        mImageView.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View arg0, MotionEvent arg1) {
-//                switch (arg1.getAction()) {
-//                    case MotionEvent.ACTION_UP:
-//                        if (byteImage == null)
-//                            break;
-//
-//                        final Bitmap bm = getImage(byteImage); // 이미지 가져오기
-//
-//                        DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    saveBitmaptoJpeg(bm, "Handyrok", "save");
-//                                }
-//                            };
-//
-//                            DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    dialog.dismiss();
-//                                }
-//                            };
-//
-//                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//                            builder.setPositiveButton("저장", saveListener)
-//                                    .setNegativeButton("닫기", cancelListner);
-//
-//                            final AlertDialog dialog = builder.create();
-//                            LayoutInflater inflater = getLayoutInflater();
-//                            View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
-//
-//                            ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
-//
-//                            // 이미지 set
-//                            dialogImage.setImageBitmap(bm);
-//
-//                            // 이미지 크게
-//                            dialogImage.getLayoutParams().height = 600;
-//                            dialogImage.requestLayout();
-//
-//                            // setView
-//                            dialog.setView(dialogLayout);
-//                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-//
-//                            dialog.show();
-//
-//                        break;
-//                }
-//                return true;
-//            }
-//        });
 
         // onClickListener
         Button.OnClickListener onClickListener = new Button.OnClickListener() {
@@ -308,9 +252,7 @@ public class WriteActivity extends AppCompatActivity {
                             // 이미지 byte 불러오기
                             byteImage = getByteArray();
 
-                            //TODO : 업데이트/삭제 기능
-
-                            // 이미지가 추가되지 않았다면 insert 하지 않는다.
+                            // 이미지가 없다면 insert 하지 않는다.
                             if (byteImage != null) {
                                 String sql = "INSERT INTO table_image values(?, ?)";
                                 SQLiteStatement insertStmt = dbs.compileStatement(sql);
@@ -334,6 +276,36 @@ public class WriteActivity extends AppCompatActivity {
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
                             db.open();
                             db.modifyData(id, name, place, date, contexts);
+                            Toast.makeText(context, "수정된 인덱스 : " + id, Toast.LENGTH_LONG).show();
+
+                            // 현재 불러온 이미지가 null이 아니라면 update 해주도록 한다.
+                            if (byteImage != null) {
+                                Log.d("업데이트", "수행");
+                                String updateSql = "UPDATE table_image SET image_data = (?) WHERE image_id = (?)";
+                                SQLiteStatement updateStmt = dbs.compileStatement(updateSql);
+                                updateStmt.clearBindings();
+                                updateStmt.bindBlob(1, byteImage);
+                                updateStmt.bindString(2, String.valueOf(id));
+                                updateStmt.execute();
+                                Log.d("수정한 인덱스", String.valueOf(id));
+                            }
+                            // 이미지가 없는 상태라면 insert 해준다.
+                            else if (byteImage == null) {
+                                Log.d("인설트", "수행");
+                                byteImage = getByteArray();
+                                try {
+                                    String sql = "INSERT INTO table_image values(?, ?)";
+                                    SQLiteStatement insertStmt = dbs.compileStatement(sql);
+                                    insertStmt.clearBindings();
+                                    insertStmt.bindString(1, String.valueOf(id));
+                                    insertStmt.bindBlob(2, byteImage);
+                                    insertStmt.execute();
+                                    Log.d("추가한 인덱스", String.valueOf(id));
+                                }catch (Exception e) {
+                                    Log.d("삭제해서 비어있을 경우에 대한 예외처리", "");
+                                }
+                            }
+
                             db.close();
                             okDialog("수정");
                         } else {
@@ -382,6 +354,7 @@ public class WriteActivity extends AppCompatActivity {
                             @Override
                             public void onClick(SweetAlertDialog sDialog) {
                                 sDialog.dismiss();
+
                                 Intent intent = getIntent();
                                 finish();
                                 startActivity(intent);
@@ -678,8 +651,8 @@ public class WriteActivity extends AppCompatActivity {
             }
 
             if ( check_result ) {
-                //위치 값을 가져올 수 있음
-                ;
+                // 위치 값 가져오기
+                etPlace.setText(currentLocation());
             }
             else {
                 // 거부한 퍼미션이 있다면 앱을 사용할 수 없는 이유를 설명해주고 앱을 종료합니다.2 가지 경우가 있습니다.
@@ -726,7 +699,6 @@ public class WriteActivity extends AppCompatActivity {
                 Manifest.permission.ACCESS_FINE_LOCATION);
         int hasCoarseLocationPermission = ContextCompat.checkSelfPermission(WriteActivity.this,
                 Manifest.permission.ACCESS_COARSE_LOCATION);
-
 
         if (hasFineLocationPermission == PackageManager.PERMISSION_GRANTED &&
                 hasCoarseLocationPermission == PackageManager.PERMISSION_GRANTED) {
@@ -776,10 +748,9 @@ public class WriteActivity extends AppCompatActivity {
 
         }
 
-
-
         if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+//            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
+            Log.d("주소 미발견", "");
             return "주소 미발견";
 
         }

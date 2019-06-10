@@ -86,13 +86,14 @@ public class DBAdapter {
         db.delete(TABLE, "_id = " + id, null);
     }
 
-    public void modifyData(long id, String name, String place, String date, String context) {
+    public void modifyData(int id, String name, String place, String date, String context) {
         ContentValues values = new ContentValues();
         values.put("name", name);
         values.put("place", place);
         values.put("date", date);
         values.put("contexts", context);
-        db.update(TABLE, values, "_id='" + id + "'", null);
+
+        db.update(TABLE, values, "_id = " + id, null);
     }
 
     public Cursor searchDataByColumn(String column, String data) {
