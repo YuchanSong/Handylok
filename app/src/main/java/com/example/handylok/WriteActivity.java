@@ -168,6 +168,20 @@ public class WriteActivity extends AppCompatActivity {
             Log.d("RequestCode Error", "");
         }
 
+        // etPlace Touch Listener
+        etPlace.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_UP) {
+                    // etPlace 수정
+                    checkRunTimePermission();
+                    etPlace.setText(currentLocation());
+                }
+                return false;
+            }
+        });
+
+
         // etDate Touch Listener
         etDate.setOnTouchListener(new View.OnTouchListener() {
             @Override
