@@ -148,7 +148,6 @@ public class WriteActivity extends AppCompatActivity {
 
             // etPlace 수정
             etPlace.setText(currentLocation());
-
             update.setVisibility(View.GONE);
         } else if (MainRequestCode == modifyMode) {
             Log.d("modifyMode", "수정 모드");
@@ -195,64 +194,108 @@ public class WriteActivity extends AppCompatActivity {
         });
 
         // ImageView Touch Listener
-        mImageView.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View arg0, MotionEvent arg1) {
-                switch (arg1.getAction()) {
-                    case MotionEvent.ACTION_UP:
-                        if (byteImage == null)
-                            break;
-
-                        final Bitmap bm = getImage(byteImage); // 이미지 가져오기
-
-                        DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    saveBitmaptoJpeg(bm, "Handyrok", "save");
-                                }
-                            };
-
-                            DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.dismiss();
-                                }
-                            };
-
-                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                            builder.setPositiveButton("저장", saveListener)
-                                    .setNegativeButton("닫기", cancelListner);
-
-                            final AlertDialog dialog = builder.create();
-                            LayoutInflater inflater = getLayoutInflater();
-                            View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
-
-                            ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
-
-                            // 이미지 set
-                            dialogImage.setImageBitmap(bm);
-
-                            // 이미지 크게
-                            dialogImage.getLayoutParams().height = 600;
-                            dialogImage.requestLayout();
-
-                            // setView
-                            dialog.setView(dialogLayout);
-                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-                            dialog.show();
-
-                        break;
-                }
-                return true;
-            }
-        });
+//        mImageView.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View arg0, MotionEvent arg1) {
+//                switch (arg1.getAction()) {
+//                    case MotionEvent.ACTION_UP:
+//                        if (byteImage == null)
+//                            break;
+//
+//                        final Bitmap bm = getImage(byteImage); // 이미지 가져오기
+//
+//                        DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    saveBitmaptoJpeg(bm, "Handyrok", "save");
+//                                }
+//                            };
+//
+//                            DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface dialog, int which) {
+//                                    dialog.dismiss();
+//                                }
+//                            };
+//
+//                            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//                            builder.setPositiveButton("저장", saveListener)
+//                                    .setNegativeButton("닫기", cancelListner);
+//
+//                            final AlertDialog dialog = builder.create();
+//                            LayoutInflater inflater = getLayoutInflater();
+//                            View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
+//
+//                            ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
+//
+//                            // 이미지 set
+//                            dialogImage.setImageBitmap(bm);
+//
+//                            // 이미지 크게
+//                            dialogImage.getLayoutParams().height = 600;
+//                            dialogImage.requestLayout();
+//
+//                            // setView
+//                            dialog.setView(dialogLayout);
+//                            dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+//
+//                            dialog.show();
+//
+//                        break;
+//                }
+//                return true;
+//            }
+//        });
 
         // onClickListener
         Button.OnClickListener onClickListener = new Button.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switch (view.getId()) {
+                    case R.id.mImageView:
+                        if (byteImage == null)
+                            break;
+
+                        final Bitmap bm = getImage(byteImage); // 이미지 가져오기
+
+                        DialogInterface.OnClickListener saveListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                saveBitmaptoJpeg(bm, "Handyrok", "save");
+                            }
+                        };
+
+                        DialogInterface.OnClickListener cancelListner = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        };
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setPositiveButton("저장", saveListener)
+                                .setNegativeButton("닫기", cancelListner);
+
+                        final AlertDialog dialog = builder.create();
+                        LayoutInflater inflater = getLayoutInflater();
+                        View dialogLayout = inflater.inflate(R.layout.dialog_image, null);
+
+                        ImageView dialogImage = dialogLayout.findViewById(R.id.DialogImage);
+
+                        // 이미지 set
+                        dialogImage.setImageBitmap(bm);
+
+                        // 이미지 크게
+                        dialogImage.getLayoutParams().height = 600;
+                        dialogImage.requestLayout();
+
+                        // setView
+                        dialog.setView(dialogLayout);
+                        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+                        dialog.show();
+
+                        break;
                     case R.id.insert: // DB에 데이터 추가
                         loadData();
 
@@ -263,7 +306,7 @@ public class WriteActivity extends AppCompatActivity {
                             Log.d("추가 인덱스 return", String.valueOf(i));
 
                             // 이미지 byte 불러오기
-                            byte[] byteImage = getByteArray();
+                            byteImage = getByteArray();
 
                             //TODO : 업데이트/삭제 기능
 
@@ -296,14 +339,62 @@ public class WriteActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(getApplicationContext(), "공란 없이 입력해주세요.", Toast.LENGTH_SHORT).show();
                         }
-
                         break;
                 }
             }
         };
 
-        insert.setOnClickListener(onClickListener);
-        update.setOnClickListener(onClickListener);
+        mImageView.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                final SweetAlertDialog dDialog = new SweetAlertDialog(context, SweetAlertDialog.WARNING_TYPE);
+                dDialog.setTitleText("정말 지우시겠습니까?");
+                dDialog.setContentText("사진이 제거됩니다.");
+                dDialog.setCancelText("안 지울래요");
+                dDialog.setConfirmText("지울게요!");
+                dDialog.showCancelButton(true);
+                dDialog.setCancelClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        sDialog.cancel();
+                    }
+                });
+                dDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                    @Override
+                    public void onClick(SweetAlertDialog sDialog) {
+                        // 이미지 byte 불러오기
+                        byteImage = getByteArray();
+
+                        String sql = "DELETE FROM table_image WHERE image_id = '" + id +"'";
+                        SQLiteStatement deleteStmt = dbs.compileStatement(sql);
+                        deleteStmt.execute();
+                        Log.d("삭제한 인덱스", String.valueOf(id));
+
+                        dDialog.showCancelButton(false);
+                        sDialog
+                                .setTitleText("삭제되었습니다!")
+                                .setContentText("등록된 사진을 지웠습니다.")
+                                .setConfirmText("확인")
+                                .setConfirmClickListener(null)
+                                .changeAlertType(SweetAlertDialog.SUCCESS_TYPE);
+                        sDialog.setConfirmClickListener(new SweetAlertDialog.OnSweetClickListener() {
+                            @Override
+                            public void onClick(SweetAlertDialog sDialog) {
+                                sDialog.dismiss();
+                                Intent intent = getIntent();
+                                finish();
+                                startActivity(intent);
+                            }
+                        });
+
+                    }
+                });
+                dDialog.show();
+
+                return true;
+            }
+        });
 
         // 수정모드 일때만 이미지 조회하기
         if (MainRequestCode == modifyMode) {
@@ -313,7 +404,6 @@ public class WriteActivity extends AppCompatActivity {
                 Log.d("조회 인덱스", String.valueOf(id));
 
                 while (monthCursor.moveToNext()) {
-//                    byte[] byteImage = monthCursor.getBlob(0);
                     byteImage = monthCursor.getBlob(0);
                     Bitmap bm = getImage(byteImage);
                     mImageView.setImageBitmap(bm);
@@ -321,11 +411,16 @@ public class WriteActivity extends AppCompatActivity {
                 monthCursor.close();
             } catch (Exception e) {
             } finally {
-                mHelper.close();///
+//                mHelper.close();///
             }
         }
+
+        insert.setOnClickListener(onClickListener);
+        update.setOnClickListener(onClickListener);
+        mImageView.setOnClickListener(onClickListener);
     }
 
+    // 현재위치 불러오기
     private String currentLocation() {
         gpsTracker = new GpsTracker(WriteActivity.this);
 
@@ -336,6 +431,7 @@ public class WriteActivity extends AppCompatActivity {
         return address;
     }
 
+    // 이미지 저장하기
     public void saveBitmaptoJpeg(Bitmap bitmap, String folder, String name){
         String ex_storage =Environment.getExternalStorageDirectory().getAbsolutePath();
         Log.d("ex_storage", ex_storage);
@@ -426,6 +522,7 @@ public class WriteActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // 사진첩에서 불러오기
     private void takePhoto() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE); //사진을 찍기 위하여 설정합니다.
         File photoFile = null;
@@ -442,6 +539,7 @@ public class WriteActivity extends AppCompatActivity {
         }
     }
 
+    // 이미지파일 만들기
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
@@ -470,6 +568,7 @@ public class WriteActivity extends AppCompatActivity {
         finish();
     }
 
+    // 퍼미션체크
     private boolean checkPermissions() {
         int result;
         List<String> permissionList = new ArrayList<>();
@@ -486,6 +585,7 @@ public class WriteActivity extends AppCompatActivity {
         return true;
     }
 
+    // 데이터 불러오기
     private void loadData() {
         name = etName.getText().toString();
         place = etPlace.getText().toString();
