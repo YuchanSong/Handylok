@@ -152,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
             String place = String.valueOf(currentCursor.getString(2));
             String date = String.valueOf(currentCursor.getString(3));
             String contexts = String.valueOf(currentCursor.getString(4));
-            Toast.makeText(context, "인덱스 : " + (nowIndex), Toast.LENGTH_SHORT).show();
 
             Intent intent = new Intent(context, WriteActivity.class);
             intent.putExtra("_id", nowIndex);

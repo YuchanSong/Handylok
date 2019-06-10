@@ -276,7 +276,7 @@ public class WriteActivity extends AppCompatActivity {
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
                             db.open();
                             db.modifyData(id, name, place, date, contexts);
-                            Toast.makeText(context, "수정된 인덱스 : " + id, Toast.LENGTH_LONG).show();
+                            Log.d("수정된 인덱스", String.valueOf(id));
 
                             // 현재 불러온 이미지가 null이 아니라면 update 해주도록 한다.
                             if (byteImage != null) {
@@ -354,7 +354,6 @@ public class WriteActivity extends AppCompatActivity {
                             @Override
                             public void onClick(SweetAlertDialog sDialog) {
                                 sDialog.dismiss();
-
                                 Intent intent = getIntent();
                                 finish();
                                 startActivity(intent);
