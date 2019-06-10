@@ -265,6 +265,8 @@ public class WriteActivity extends AppCompatActivity {
                             // 이미지 byte 불러오기
                             byte[] byteImage = getByteArray();
 
+                            //TODO : 업데이트/삭제 기능
+
                             // 이미지가 추가되지 않았다면 insert 하지 않는다.
                             if (byteImage != null) {
                                 String sql = "INSERT INTO table_image values(?, ?)";
