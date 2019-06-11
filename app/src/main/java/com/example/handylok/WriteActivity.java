@@ -246,7 +246,7 @@ public class WriteActivity extends AppCompatActivity {
                         if (name.length() > 0 && place.length() > 0 && contexts.length() > 0) {
                             // 작성글 디비에 추가
                             db.open();
-                            long i = (db.addData(name, place, date, contexts)) - 1;
+                            long i = (db.addData(name, place, date, contexts));
                             Log.d("추가 인덱스 return", String.valueOf(i));
 
                             // 이미지 byte 불러오기
