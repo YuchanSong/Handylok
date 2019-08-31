@@ -11,7 +11,7 @@ public class DBAdapter {
     private final Context context;
     static final String DB = "Handyrok";
     static final String TABLE = "CONFERENCE";
-    static final String CREATE = "CREATE TABLE " + TABLE +
+    static final String CREATE = "CREATE TABLE IF NOT EXISTS " + TABLE +
             "(_id INTEGER PRIMARY KEY AUTOINCREMENT," +
             "name TEXT, " +
             "place TEXT, " +
@@ -52,7 +52,7 @@ public class DBAdapter {
             db.execSQL(CREATE);
 
             db.execSQL(CREATE_TABLE_IMAGE);
-            db.execSQL(DROP + CREATE_TABLE_IMAGE);
+            db.execSQL(DROP + DB_TABLE);
             db.execSQL(CREATE_TABLE_IMAGE);
         }
     }
